@@ -28,10 +28,12 @@ class TodoList extends Component {
     console.log("refreshing");
     this.setState({ refreshing: true });
     this.setState({ refreshing: false });
-    this.props.sortTodoList()
+    this.props.sortTodoList();
   };
 
-  _renderItem = ({ item }) => <Todo todo={item} />;
+  _renderItem = ({ item, index }) => (
+    <Todo todo={item} index={index} dataLength={this.props.todo.list.length} />
+  );
 
   render() {
     console.log("flatlist render");
@@ -47,9 +49,6 @@ class TodoList extends Component {
           initialNumToRender={10}
           maxToRenderPerBatch={10}
           removeClippedSubviews
-          style={{
-            marginVertical: 10
-          }}
         />
       </View>
     );

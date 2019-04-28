@@ -1,75 +1,172 @@
 import React, { Component } from "react";
 import {
-  TouchableHighlight,
-  TouchableOpacity,
   TouchableNativeFeedback,
   StyleSheet,
-  View
+  View,
+  BackHandler,
+  Platform,
+  Dimensions
 } from "react-native";
-import { ListItem, Text } from "react-native-elements";
-import { toggleTodoComplete, sortTodoList } from "../actions";
+import { ListItem, Text, Button } from "react-native-elements";
+import Fontawesome5 from "react-native-vector-icons/FontAwesome5";
+import { toggleTodoComplete, sortTodoList, deleteTodo } from "../actions";
 import { connect } from "react-redux";
 import moment from "moment";
+import Modal from "react-native-modal";
+
+const deviceWidth = Dimensions.get("window").width;
+const deviceHeight =
+  Platform.OS === "ios"
+    ? Dimensions.get("window").height
+    : require("react-native-extra-dimensions-android").get(
+        "REAL_WINDOW_HEIGHT"
+      );
 
 class Todo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      fromNow: moment.unix(this.props.todo.time).fromNow()
+      fromNow: moment.unix(this.props.todo.time).fromNow(),
+      isMenuOpen: false
     };
   }
 
   componentDidMount() {
-    // this.tick = setInterval(() => {
-    //   this.setState({ fromNow: moment.unix(this.props.todo.time).fromNow() });
-    // }, 1000);
+    BackHandler.addEventListener("hardwareBackPress", this.handleBackPress);
   }
 
   componentWillUnmount() {
-    // clearInterval(this.tick);
+    BackHandler.removeEventListener("hardwareBackPress", this.handleBackPress);
   }
 
+  handleBackPress = () => {
+    if (this.state.isMenuOpen) {
+      this._hideMenu();
+      return true;
+    } else {
+      console.log("back press");
+      return;
+    }
+  };
+
+  _openMenu = () => {
+    this.setState({ isMenuOpen: true });
+  };
+
+  _hideMenu = () => {
+    this.setState({ isMenuOpen: false });
+  };
+
   _onTodoPress = () => {
-    console.log("press");
     const { id } = this.props.todo;
     this.props.toggleTodoComplete(id);
     // this.props.sortTodoList();
   };
 
   render() {
-    console.log("todo render", this.state);
+    console.log("todo render");
     return (
       <View
-        style={[
-          styles.todoItem,
-          {
-            opacity: this.props.todo.isCompleted ? 0.5 : 1
-          }
-        ]}
+        style={{
+          marginTop: this.props.index == 0 ? 15 : 0,
+          marginBottom: this.props.index == this.props.dataLength - 1 ? 15 : 0
+        }}
       >
-        <View style={[styles.left, styles.green]} />
-        <TouchableNativeFeedback
-          onPress={this._onTodoPress}
-          background={TouchableNativeFeedback.Ripple("#2899CB", false)}
-          useForeground={true}
-          // hitSlop={{ top: 15, bottom: 15, right: 15, left: 15 }}
+        <View
+          style={[
+            styles.todoItem,
+            {
+              opacity: this.props.todo.isCompleted ? 0.5 : 1
+            }
+          ]}
         >
-          <ListItem
-            key={this.props.todo.id}
-            title={this.props.todo.title}
-            subtitle={this.state.fromNow}
-            titleStyle={[
-              styles.todoText,
-              this.props.todo.isCompleted ? styles.completedText : ""
-            ]}
-            checkBox={{
-              checked: this.props.todo.isCompleted,
-              checkedColor: "green",
-              uncheckedColor: "red",
-              onPress: this._onTodoPress
+          <View style={[styles.left, styles.green]} />
+          <TouchableNativeFeedback
+            onPress={this._onTodoPress}
+            background={TouchableNativeFeedback.Ripple("#2899CB", false)}
+            useForeground={true}
+            onLongPress={() => {
+              console.log("ac");
+              this._openMenu();
             }}
-          />
-        </TouchableNativeFeedback>
+          >
+            <ListItem
+              key={this.props.todo.id}
+              title={this.props.todo.title}
+              subtitle={this.state.fromNow}
+              titleStyle={[
+                styles.todoText,
+                this.props.todo.isCompleted ? styles.completedText : ""
+              ]}
+              checkBox={{
+                checked: this.props.todo.isCompleted,
+                checkedColor: "green",
+                uncheckedColor: "red",
+                onPress: this._onTodoPress
+              }}
+            />
+          </TouchableNativeFeedback>
+        </View>
+        <Modal
+          animationIn="tada"
+          animationOut="zoomOut"
+          isVisible={this.state.isMenuOpen}
+          useNativeDriver
+          deviceWidth={deviceWidth}
+          deviceHeight={deviceHeight}
+          hasBackdrop={true}
+          hideModalContentWhileAnimating
+          onBackdropPress={() => {
+            this._hideMenu();
+          }}
+          style={{ justifyContent: "center", alignItems: "center" }}
+        >
+          <View
+            style={{
+              justifyContent: "space-evenly",
+              alignItems: "center",
+              backgroundColor: "white",
+              height: "20%",
+              width: "70%",
+              borderRadius: 10
+            }}
+          >
+            <Text style={{ fontWeight: "bold" }}>
+              Delete '{this.props.todo.title}'?
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+                alignItems: "center"
+              }}
+            >
+              <Button
+                title="Delete Todo"
+                onPress={() => {
+                  this.props.deleteTodo(this.props.todo.id);
+                }}
+                raised
+                icon={
+                  <Fontawesome5
+                    name={"trash"}
+                    type="regular"
+                    color="white"
+                    style={{ marginRight: 5 }}
+                  />
+                }
+                containerStyle={styles.button}
+              />
+              <Button
+                title="Cancel"
+                onPress={this._hideMenu}
+                type="outline"
+                containerStyle={styles.button}
+                raised
+              />
+            </View>
+          </View>
+        </Modal>
       </View>
     );
   }
@@ -98,6 +195,9 @@ const styles = StyleSheet.create({
     zIndex: 1,
     width: 5
   },
+  button: {
+    marginHorizontal: 5
+  },
   green: {
     backgroundColor: "green"
   },
@@ -118,6 +218,9 @@ const mapDispatchToProps = dispatch => {
     },
     sortTodoList: () => {
       dispatch(sortTodoList());
+    },
+    deleteTodo: id => {
+      dispatch(deleteTodo(id));
     }
   };
 };

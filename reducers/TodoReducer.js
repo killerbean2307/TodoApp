@@ -46,16 +46,16 @@ const todoReducer = (state = initState, action) => {
           } else return todo;
         })
       };
-    case SORT_TODO_LIST:
-      return {
-        list: [...state.list].sort((a, b) => {
-          return a.isCompleted - b.isCompleted || b.time - a.time;
-        })
-      };
     case DELETE_TODO:
       return {
         list: state.list.filter(todo => {
           return todo.id != action.id;
+        })
+      };
+    case SORT_TODO_LIST:
+      return {
+        list: [...state.list].sort((a, b) => {
+          return a.isCompleted - b.isCompleted || b.time - a.time;
         })
       };
     default:

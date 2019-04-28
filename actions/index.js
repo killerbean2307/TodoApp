@@ -1,4 +1,9 @@
-import { ADD_TODO, T0GGLE_TODO_COMPLETE, SORT_TODO_LIST } from "./types";
+import {
+  ADD_TODO,
+  T0GGLE_TODO_COMPLETE,
+  SORT_TODO_LIST,
+  DELETE_TODO
+} from "./types";
 
 export const addTodo = (title, time) => {
   return {
@@ -10,7 +15,7 @@ export const addTodo = (title, time) => {
 
 export const deleteTodo = id => {
   return {
-    type: T0GGLE_TODO_COMPLETE,
+    type: DELETE_TODO,
     id
   };
 };

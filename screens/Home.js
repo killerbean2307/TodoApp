@@ -6,8 +6,8 @@ import TodoList from "../components/TodoList";
 export default class Home extends Component {
   static navigationOptions = {
     title: "Todo List",
-    headerStyle: {backgroundColor: "dodgerblue"},
-    headerTitleStyle: {color: "white"}
+    headerStyle: { backgroundColor: "dodgerblue" },
+    headerTitleStyle: { color: "white" }
   };
 
   _handleAddTodoPress = () => {
